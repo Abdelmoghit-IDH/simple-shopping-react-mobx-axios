@@ -1,27 +1,28 @@
-import React, { useState } from "react";
+import { useContext } from "react";
 import { Container, ListGroup, ListGroupItem, Button } from "reactstrap";
 import { CSSTransition, TransitionGroup } from "react-transition-group";
+
 import { v4 as uuidv4 } from "uuid";
+import { observer } from "mobx-react-lite";
+import ItemStore from "../store";
 
-
-function ShoppingList(props) {
-
-  const [items, setItems] = useState([
-    { id: uuidv4(), name: "Eggs" },
-    { id: uuidv4(), name: "Milk" },
-    { id: uuidv4(), name: "Steak" },
-    { id: uuidv4(), name: "Water" },
-  ]);
+const ShoppingList = () => {
+  const itemStore = useContext(ItemStore);
+  const { items, removeItem, addItem } = itemStore;
 
   return (
-    <Container>
+    <>
+      <Container>
         <Button
           color="dark"
           style={{ marginBottom: "2rm" }}
-          onClick={() => {
+          onClick={(_) => {
             const name = prompt("Enter Item");
             if (name) {
-              setItems(items.concat({ id: uuidv4(), name }));
+              addItem({
+                id: uuidv4(),
+                name: name,
+              });
             }
           }}
         >
@@ -36,10 +37,10 @@ function ShoppingList(props) {
                   <Button
                     className="remove-btn"
                     color="danger"
-                    onClick={() => {
-                      setItems(items.filter((item) => item.id !== id));
-                    }}
-                  >&times;</Button>
+                    onClick={(_) => removeItem(id)}
+                  >
+                    &times;
+                  </Button>
                   {name}
                 </ListGroupItem>
               </CSSTransition>
@@ -47,7 +48,8 @@ function ShoppingList(props) {
           </TransitionGroup>
         </ListGroup>
       </Container>
-  )
-}
+    </>
+  );
+};
 
-export default ShoppingList;
+export default observer(ShoppingList);
