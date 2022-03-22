@@ -1,31 +1,75 @@
-import { v4 as uuidv4 } from "uuid";
-import { observable, action, reaction } from "mobx"
-import { createContext } from "react"
+import {
+  observable,
+  action,
+  reaction,
+  makeObservable,
+  runInAction,
+} from "mobx";
+
+import { createContext } from "react";
+
+import axios from "axios";
+
+const API_URL = "http://localhost:3001/api/items";
 
 export interface Item {
-  id?: string;
+  _id?: string;
   name: string;
 }
 
 class ItemStore {
   constructor() {
-    reaction(() => this.items, _ => console.log(this.items.length))
+    makeObservable(this);
+    reaction(
+      () => this.items,
+      (_) => console.log(this.items)
+    );
+    this.items = [];
   }
 
-  @observable items: Item[] = [
-    { id: uuidv4(), name: "Eggs" },
-    { id: uuidv4(), name: "Milk" },
-    { id: uuidv4(), name: "Steak" },
-    { id: uuidv4(), name: "Water" },
-  ]
+  @observable items: any;
 
   @action addItem = (item: Item) => {
-    this.items.push({ ...item, id: uuidv4() })
-  }
-  
+    this.items.push(item);
+  };
+
   @action removeItem = (id: string) => {
-    this.items = this.items.filter(item => item.id !== id)
-  }
+    this.items = this.items.filter((item) => item._id !== id);
+  };
+
+  //!--------------------MongoDB Functions----------------------
+
+  @action.bound
+  getAllItems = async () => {
+    const items = await this.fetchItemsData();
+    runInAction(() => {
+      for (let i = 0; i < items.length; i++) {
+        this.items.push({
+          _id: items[i]["_id"],
+          name: items[i]["name"],
+        });
+      }
+    });
+  };
+
+  @action.bound
+  addItemDb = (item: Item) => {
+    axios.post(API_URL, item).then((res) => {
+      console.log(res);
+    });
+  };
+
+  @action.bound
+  deleteItemDb = (id: string) => {
+    console.log(id)
+    axios.delete(API_URL + `/${id}`,).then((res) => {
+      console.log(res);
+    });
+  };
+
+  fetchItemsData = async () => {
+    return axios.get(API_URL).then((res) => res.data);
+  };
 }
 
-export default createContext(new ItemStore())
+export default createContext(new ItemStore());

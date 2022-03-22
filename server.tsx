@@ -1,11 +1,13 @@
 const express = require("express")
 const mongoose = require("mongoose")
 const bodyParser = require("body-parser")
+var cors = require('cors')
 
 const items = require("./routes/api/items.tsx")
 
 //Initialiser "express" dans une variable nommée app
 const app = express()
+app.use(cors())
 
 //BodyParser Middleware 
 app.use(bodyParser.json())
@@ -20,6 +22,6 @@ mongoose.connect(db)
 
 app.use("/api/items", items);
 
-const port = process.env.PORT || 6000
+const port = process.env.PORT || 3001
 
 app.listen(port,()=> console.log(`Server started on port ${port}`))
